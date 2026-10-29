@@ -142,14 +142,6 @@ All network calls have a 10-second timeout and handle `SocketException` (no inte
 
 ---
 
-## Known Limitations
-
-- **Single Visit Session**: As permitted by the assignment scope, each registration represents a single visit session. Multiple recurring entries or historical visit logs for the same pass are not maintained.
-- **Active Internet Requirement**: The application connects directly to the live MockAPI endpoints. It requires an active internet connection to synchronize records (offline local database caching via SQLite/Hive is not included).
-- **Emulator Camera Hardware**: On Android emulators without a configured webcam or virtual camera, camera hardware may be reported as unavailable. To ensure evaluators can test the application on any emulator, a built-in **"ENTER PASS ID MANUALLY"** button is provided on the scanner screen to look up passes by ID.
-
----
-
 ## How to Run the Project
 
 1. Make sure Flutter and Dart are installed on your machine.
