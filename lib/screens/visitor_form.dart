@@ -37,7 +37,6 @@ class _VisitorFormState extends State<VisitorForm> {
     emailCtrl.text = v?.email ?? '';
     purposeCtrl.text = v?.purpose ?? '';
 
-    // Safe dropdown selection preventing assertion crashes
     visitorType = AppConstants.visitorTypes.contains(v?.visitorType)
         ? v!.visitorType
         : AppConstants.visitorTypes.first;
@@ -226,7 +225,6 @@ class _VisitorFormState extends State<VisitorForm> {
             ),
             const SizedBox(height: 24),
 
-            // Save and Cancel buttons (Spec Requirement)
             Row(
               children: [
                 Expanded(

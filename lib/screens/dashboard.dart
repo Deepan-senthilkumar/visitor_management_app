@@ -11,16 +11,63 @@ import 'visitor_list.dart';
 import 'qr_scanner.dart';
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({super.key});
+  final void Function(int tabIndex, String filter)? onNavigateTab;
+
+  const Dashboard({super.key, this.onNavigateTab});
+
+  void _goToVisitors(BuildContext context, String filter) {
+    if (onNavigateTab != null) {
+      onNavigateTab!(1, filter);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VisitorList(initialFilter: filter),
+        ),
+      );
+    }
+  }
+
+  void _goToScan(BuildContext context) {
+    if (onNavigateTab != null) {
+      onNavigateTab!(2, '');
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const QrScanner(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Visitor Desk'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Visitor Desk',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Sync Visitors',
             onPressed: () {
               context.read<VisitorProvider>().fetchVisitors();
@@ -49,67 +96,9 @@ class Dashboard extends StatelessWidget {
           return RefreshIndicator(
             onRefresh: () => provider.fetchVisitors(),
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                // Front Desk Header Card
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.domain_rounded, color: Colors.white, size: 24),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Visitor Desk Operations',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
-                              style: const TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Top 3 Stat Cards
                 Row(
                   children: [
                     StatCard(
@@ -117,6 +106,7 @@ class Dashboard extends StatelessWidget {
                       count: '${provider.totalVisitorsToday}',
                       icon: Icons.groups_rounded,
                       color: const Color(0xFF0284C7),
+                      onTap: () => _goToVisitors(context, 'Today Registered'),
                     ),
                     const SizedBox(width: 8),
                     StatCard(
@@ -124,6 +114,7 @@ class Dashboard extends StatelessWidget {
                       count: '${provider.currentlyCheckedIn}',
                       icon: Icons.login_rounded,
                       color: const Color(0xFF16A34A),
+                      onTap: () => _goToVisitors(context, 'Checked In'),
                     ),
                     const SizedBox(width: 8),
                     StatCard(
@@ -131,44 +122,71 @@ class Dashboard extends StatelessWidget {
                       count: '${provider.checkedOutToday}',
                       icon: Icons.logout_rounded,
                       color: const Color(0xFFEA580C),
+                      onTap: () => _goToVisitors(context, 'Checked Out'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                // Quick Action Buttons
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const VisitorForm()),
-                          );
-                        },
-                        icon: const Icon(Icons.person_add, size: 18),
-                        label: const Text('REGISTER'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const VisitorForm(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.person_add_rounded, size: 20),
+                          label: const Text(
+                            'REGISTER',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.6,
+                              fontSize: 14,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0284C7),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shadowColor: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const QrScanner()),
-                          );
-                        },
-                        icon: const Icon(Icons.qr_code_scanner, size: 18),
-                        label: const Text('SCAN QR'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _goToScan(context),
+                          icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
+                          label: const Text(
+                            'SCAN QR',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.6,
+                              fontSize: 14,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F172A),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.35),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -176,31 +194,43 @@ class Dashboard extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Recent Visitors Header with "View All"
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'Recent Visitors',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const VisitorList()),
-                        );
-                      },
-                      child: const Text('View All'),
+                    TextButton.icon(
+                      onPressed: () => _goToVisitors(context, 'All'),
+                      label: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 12,
+                        color: Color(0xFF0284C7),
+                      ),
+                      icon: const Text(
+                        'View All',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
 
                 if (all.isEmpty)
                   const EmptyStateWidget(
                     title: 'No Visitors Registered',
-                    message: 'Register a new visitor to start monitoring visits.',
+                    message:
+                        'Register a new visitor to start monitoring visits.',
                     icon: Icons.person_off_outlined,
                   )
                 else

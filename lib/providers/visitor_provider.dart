@@ -12,12 +12,10 @@ class VisitorProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // Unmodifiable view to prevent accidental direct list mutation
   UnmodifiableListView<Visitor> get visitors => UnmodifiableListView(_visitors);
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // 1. Fetch all visitors with newest first sorting
   Future<void> fetchVisitors() async {
     _isLoading = true;
     _error = null;
@@ -25,7 +23,6 @@ class VisitorProvider extends ChangeNotifier {
 
     try {
       final items = await _api.getVisitors();
-      // Sort newest registration first
       items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _visitors = items;
       _error = null;
@@ -38,14 +35,12 @@ class VisitorProvider extends ChangeNotifier {
     }
   }
 
-  // 2. Fetch single visitor by ID via API (Spec requirement for QR scan)
   Future<Visitor> getVisitorById(String id) async {
     final visitor = await _api.getVisitorById(id);
     _replaceOrInsert(visitor);
     return visitor;
   }
 
-  // 3. Register visitor
   Future<Visitor> addVisitor(Visitor visitor) async {
     final created = await _api.addVisitor(visitor);
     _visitors.insert(0, created);
@@ -53,17 +48,17 @@ class VisitorProvider extends ChangeNotifier {
     return created;
   }
 
-  // 4. Update existing visitor
   Future<Visitor> updateVisitor(Visitor visitor) async {
     final updated = await _api.updateVisitor(visitor);
     _replaceOrInsert(updated);
     return updated;
   }
 
-  // 5. Check-In with business rule guard
   Future<Visitor> checkIn(Visitor visitor) async {
     if (visitor.status != VisitorStatus.registered.label) {
-      throw Exception('Visitor is already ${visitor.status}. Only "Registered" visitors can check in.');
+      throw Exception(
+        'Visitor is already ${visitor.status}. Only "Registered" visitors can check in.',
+      );
     }
 
     final updated = visitor.copyWith(
@@ -76,7 +71,6 @@ class VisitorProvider extends ChangeNotifier {
     return saved;
   }
 
-  // 6. Check-Out with business rule guard
   Future<Visitor> checkOut(Visitor visitor) async {
     if (visitor.status != VisitorStatus.checkedIn.label) {
       throw Exception('Visitor cannot check out without checking in first.');
@@ -92,7 +86,6 @@ class VisitorProvider extends ChangeNotifier {
     return saved;
   }
 
-  // 7. Delete visitor
   Future<void> deleteVisitor(String id) async {
     await _api.deleteVisitor(id);
     _visitors.removeWhere((v) => v.id == id);
@@ -109,7 +102,6 @@ class VisitorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Dynamic Dashboard Metrics ---
   bool _isToday(String? dateStr, DateTime today) {
     if (dateStr == null || dateStr.isEmpty) return false;
     try {
@@ -128,14 +120,20 @@ class VisitorProvider extends ChangeNotifier {
   }
 
   int get currentlyCheckedIn {
-    return _visitors.where((v) => v.status == VisitorStatus.checkedIn.label).length;
+    return _visitors
+        .where((v) => v.status == VisitorStatus.checkedIn.label)
+        .length;
   }
 
   int get checkedOutToday {
     final now = DateTime.now();
-    return _visitors.where((v) =>
-        v.status == VisitorStatus.checkedOut.label &&
-        v.checkOutTime != null &&
-        _isToday(v.checkOutTime, now)).length;
+    return _visitors
+        .where(
+          (v) =>
+              v.status == VisitorStatus.checkedOut.label &&
+              v.checkOutTime != null &&
+              _isToday(v.checkOutTime, now),
+        )
+        .length;
   }
 }
