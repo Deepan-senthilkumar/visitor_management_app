@@ -6,9 +6,8 @@ A Flutter mobile application created for front-desk and security staff to manage
 
 ## Environment & Versions
 
-- **Flutter**: 3.49.0 (compatible with Flutter 3.12.x and above)
+- **Flutter**: 3.49.0
 - **Dart**: 3.12.2
-- **Target Platform**: Android (minSdkVersion: 21, compileSdkVersion: 36)
 
 ---
 
