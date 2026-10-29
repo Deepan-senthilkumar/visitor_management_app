@@ -4,6 +4,14 @@ A Flutter mobile application created for front-desk and security staff to manage
 
 ---
 
+## Environment & Versions
+
+- **Flutter**: 3.49.0 (compatible with Flutter 3.12.x and above)
+- **Dart**: 3.12.2
+- **Target Platform**: Android (minSdkVersion: 21, compileSdkVersion: 36)
+
+---
+
 ## About the Project
 
 The app is built for a scenario where visitors (customers, vendors, etc.) visit different sites like Project A, Project B, or Project C. 
@@ -13,6 +21,12 @@ The goal was to build a clean and fast mobile app that allows:
 - Scanning visitor QR passes with the device camera to check them in and out.
 - Keeping track of who is currently on-site and who has completed their visit.
 - Viewing live stats on the dashboard calculated from API data.
+
+---
+
+## Test Login Credentials
+
+- **Not Applicable**: As outlined in the assignment specification, there is no user authentication or login gate required. The application is designed for front-desk and security kiosk personnel and opens directly into the Visitor Desk Dashboard upon launch.
 
 ---
 
@@ -118,14 +132,22 @@ All network calls have a 10-second timeout and handle `SocketException` (no inte
 
 ---
 
-## Packages Used
+## Third-Party Packages Used
 
-- `provider: ^6.1.5` - State management
-- `http: ^1.6.0` - REST API calls
-- `qr_flutter: ^4.1.0` - Generating QR codes
-- `mobile_scanner: ^7.4.2` - Camera QR code scanning
-- `permission_handler: ^13.0.2` - Handling camera permissions and opening App Settings
-- `intl: ^0.20.3` - Date and time formatting
+- `provider: ^6.1.5+1` - Reactive state management and dependency injection across screens
+- `http: ^1.6.0` - REST API client for network requests
+- `qr_flutter: ^4.1.0` - Generating high-resolution QR code passes
+- `mobile_scanner: ^7.4.2` - Camera-based barcode and QR scanning
+- `permission_handler: ^11.3.1` - Requesting camera permissions and opening system App Settings
+- `intl: ^0.20.3` - Date and timestamp formatting
+
+---
+
+## Known Limitations
+
+- **Single Visit Session**: As permitted by the assignment scope, each registration represents a single visit session. Multiple recurring entries or historical visit logs for the same pass are not maintained.
+- **Active Internet Requirement**: The application connects directly to the live MockAPI endpoints. It requires an active internet connection to synchronize records (offline local database caching via SQLite/Hive is not included).
+- **Emulator Camera Hardware**: On Android emulators without a configured webcam or virtual camera, camera hardware may be reported as unavailable. To ensure evaluators can test the application on any emulator, a built-in **"ENTER PASS ID MANUALLY"** button is provided on the scanner screen to look up passes by ID.
 
 ---
 
@@ -144,7 +166,11 @@ All network calls have a 10-second timeout and handle `SocketException` (no inte
    ```bash
    flutter analyze
    ```
-5. Run the app on an Android emulator or physical device:
+5. Run the automated tests:
+   ```bash
+   flutter test
+   ```
+6. Run the app on an Android emulator or physical device:
    ```bash
    flutter run
    ```
