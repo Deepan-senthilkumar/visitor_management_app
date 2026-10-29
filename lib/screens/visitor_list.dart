@@ -8,7 +8,12 @@ import 'visitor_details.dart';
 import 'visitor_form.dart';
 
 class VisitorList extends StatefulWidget {
-  const VisitorList({super.key});
+  final String initialFilter;
+
+  const VisitorList({
+    super.key,
+    this.initialFilter = 'All',
+  });
 
   @override
   State<VisitorList> createState() => _VisitorListState();
@@ -16,7 +21,13 @@ class VisitorList extends StatefulWidget {
 
 class _VisitorListState extends State<VisitorList> {
   final TextEditingController _searchCtrl = TextEditingController();
-  String _selectedFilter = 'All';
+  late String _selectedFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilter = widget.initialFilter;
+  }
 
   @override
   void dispose() {
@@ -52,7 +63,10 @@ class _VisitorListState extends State<VisitorList> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Delete failed: $e'), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text('Delete failed: $e'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               }
@@ -72,6 +86,7 @@ class _VisitorListState extends State<VisitorList> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
             onPressed: () => context.read<VisitorProvider>().fetchVisitors(),
           ),
         ],
@@ -83,7 +98,7 @@ class _VisitorListState extends State<VisitorList> {
             MaterialPageRoute(builder: (_) => const VisitorForm()),
           );
         },
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: const Color(0xFF0284C7),
         icon: const Icon(Icons.person_add, color: Colors.white),
         label: const Text('New Visitor', style: TextStyle(color: Colors.white)),
       ),
@@ -103,33 +118,36 @@ class _VisitorListState extends State<VisitorList> {
             );
           }
 
-          // Search filtering by Name or Mobile
           final query = _searchCtrl.text.trim().toLowerCase();
+          final filterStatus = _selectedFilter == 'Today Registered'
+              ? 'Registered'
+              : _selectedFilter;
+
           List<Visitor> list = provider.visitors.where((v) {
             final matchesName = v.name.toLowerCase().contains(query);
             final matchesPhone = v.mobile.contains(query);
-            return matchesName || matchesPhone;
-          }).toList();
+            if (!matchesName && !matchesPhone) return false;
 
-          // Status filter
-          if (_selectedFilter != 'All') {
-            list = list.where((v) => v.status == _selectedFilter).toList();
-          }
+            if (_selectedFilter != 'All' && v.status != filterStatus) {
+              return false;
+            }
+
+            return true;
+          }).toList();
 
           return Column(
             children: [
-              // Search Input Box
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
                 child: TextField(
                   controller: _searchCtrl,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'Search by name or mobile...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(Icons.clear, size: 20),
                             onPressed: () {
                               _searchCtrl.clear();
                               setState(() {});
@@ -137,7 +155,16 @@ class _VisitorListState extends State<VisitorList> {
                           )
                         : null,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF0284C7), width: 1.5),
                     ),
                     filled: true,
                     fillColor: Colors.white,
@@ -146,22 +173,40 @@ class _VisitorListState extends State<VisitorList> {
                 ),
               ),
 
-              // Filter Chips
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Row(
-                  children: ['All', 'Registered', 'Checked In', 'Checked Out'].map((status) {
+                  children: [
+                    'All',
+                    'Today Registered',
+                    'Checked In',
+                    'Checked Out',
+                  ].map((status) {
                     final isSelected = _selectedFilter == status;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
                         label: Text(status),
                         selected: isSelected,
-                        selectedColor: Theme.of(context).colorScheme.primary,
+                        selectedColor: const Color(0xFF0284C7),
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF475569),
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(
+                          color: isSelected
+                              ? const Color(0xFF0284C7)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         onSelected: (val) {
                           if (val) setState(() => _selectedFilter = status);
@@ -173,7 +218,6 @@ class _VisitorListState extends State<VisitorList> {
               ),
               const SizedBox(height: 8),
 
-              // Visitors List
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => provider.fetchVisitors(),
@@ -195,7 +239,10 @@ class _VisitorListState extends State<VisitorList> {
                         )
                       : ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           itemCount: list.length,
                           itemBuilder: (context, index) {
                             final visitor = list[index];
@@ -205,7 +252,8 @@ class _VisitorListState extends State<VisitorList> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => VisitorDetails(visitor: visitor),
+                                    builder: (_) =>
+                                        VisitorDetails(visitor: visitor),
                                   ),
                                 );
                               },
@@ -213,7 +261,8 @@ class _VisitorListState extends State<VisitorList> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => VisitorForm(visitor: visitor),
+                                    builder: (_) =>
+                                        VisitorForm(visitor: visitor),
                                   ),
                                 );
                               },

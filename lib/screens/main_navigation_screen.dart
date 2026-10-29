@@ -12,24 +12,33 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
+  String _visitorFilter = 'All';
 
-  final List<Widget> _screens  = [
-    Dashboard(),
-    VisitorList(),
-    QrScanner(),
-  ];
+  void _navigateToTab(int index, [String filter = 'All']) {
+    setState(() {
+      _currentIndex = index;
+      if (index == 1) {
+        _visitorFilter = filter;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      Dashboard(onNavigateTab: _navigateToTab),
+      VisitorList(
+        key: ValueKey(_visitorFilter),
+        initialFilter: _visitorFilter,
+      ),
+      const QrScanner(),
+    ];
+
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: (index) => _navigateToTab(index),
         selectedItemColor: const Color(0xFF0284C7),
         unselectedItemColor: Colors.grey,
         items: const [

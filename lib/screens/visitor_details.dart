@@ -124,7 +124,6 @@ class _VisitorDetailsState extends State<VisitorDetails> {
 
   @override
   Widget build(BuildContext context) {
-    // Keep local view synced if provider updates
     final provider = context.watch<VisitorProvider>();
     final matched = provider.visitors.where((v) => v.id == _visitorId);
     if (matched.isNotEmpty) {
@@ -163,7 +162,6 @@ class _VisitorDetailsState extends State<VisitorDetails> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 1. Digital Pass Card with QR Code
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -183,7 +181,6 @@ class _VisitorDetailsState extends State<VisitorDetails> {
                   ),
                   const SizedBox(height: 16),
 
-                  // QR Code
                   QrImageView(
                     data: _visitor.id,
                     version: QrVersions.auto,
@@ -206,7 +203,6 @@ class _VisitorDetailsState extends State<VisitorDetails> {
           ),
           const SizedBox(height: 16),
 
-          // 2. Details & Timestamps Card
           Card(
             child: Column(
               children: [
@@ -243,7 +239,6 @@ class _VisitorDetailsState extends State<VisitorDetails> {
           ),
           const SizedBox(height: 24),
 
-          // 3. Gate Action Button
           if (!isCheckedOut)
             ElevatedButton(
               onPressed: _isLoading ? null : _handleStatusChange,

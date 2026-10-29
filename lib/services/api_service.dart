@@ -25,7 +25,6 @@ class ApiService {
 
   static const Duration _timeout = Duration(seconds: 10);
 
-  // 1. GET: Fetch all visitors
   Future<List<Visitor>> getVisitors() async {
     try {
       final response = await _client.get(Uri.parse(baseUrl)).timeout(_timeout);
@@ -48,7 +47,6 @@ class ApiService {
     }
   }
 
-  // 2. GET by ID: Fetch single visitor details (Spec requirement for QR scan)
   Future<Visitor> getVisitorById(String id) async {
     try {
       final response = await _client.get(Uri.parse('$baseUrl/$id')).timeout(_timeout);
@@ -72,7 +70,6 @@ class ApiService {
     }
   }
 
-  // 3. POST: Register new visitor
   Future<Visitor> addVisitor(Visitor visitor) async {
     try {
       final response = await _client.post(
@@ -96,7 +93,6 @@ class ApiService {
     }
   }
 
-  // 4. PUT: Update visitor details or status
   Future<Visitor> updateVisitor(Visitor visitor) async {
     try {
       final response = await _client.put(
@@ -120,7 +116,6 @@ class ApiService {
     }
   }
 
-  // 5. DELETE: Remove visitor record
   Future<void> deleteVisitor(String id) async {
     try {
       final response = await _client.delete(Uri.parse('$baseUrl/$id')).timeout(_timeout);
